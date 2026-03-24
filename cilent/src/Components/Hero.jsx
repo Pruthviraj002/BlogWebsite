@@ -1,64 +1,99 @@
-import React from 'react'
+import React, { useRef } from 'react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ArrowUpRight, Minus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-function Hero() {
+const Hero = () => {
+    const container = useRef();
+    const titleRef = useRef();
+    const subTitleRef = useRef();
+    const lineRef = useRef();
+
+    useGSAP(() => {
+        const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+
+        tl.from(subTitleRef.current, {
+            y: 20,
+            opacity: 0,
+            duration: 1.2,
+            delay: 0.3
+        })
+        .from(lineRef.current, {
+            width: 0,
+            duration: 1,
+        }, "-=0.8")
+        .from(titleRef.current.querySelectorAll('.word'), {
+            y: 100,
+            stagger: 0.1,
+            duration: 1.5,
+            ease: "power4.out"
+        }, "-=0.8");
+
+    }, { scope: container });
+
     return (
-        <div>
-            <body>
-                <header>
-                    <h1 className="site-heading text-center text-faded d-none d-lg-block">
-                        <span className="site-heading-upper text-primary mb-3">A Free Bootstrap Business Theme</span>
-                        <span className="site-heading-lower">Business Casual</span>
+        <section ref={container} className="relative pt-32 pb-48 px-6 lg:px-12 overflow-hidden bg-white dark:bg-black">
+            <div className="max-w-screen-2xl mx-auto">
+                <div className="flex flex-col items-start text-left">
+                    <div ref={subTitleRef} className="flex items-center space-x-4 mb-8">
+                        <span className="section-label mb-0 italic">Est. 2024</span>
+                        <div ref={lineRef} className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800"></div>
+                        <span className="text-xs font-medium text-zinc-500 tracking-wide">Journal of thoughts</span>
+                    </div>
+
+                    <h1
+                        ref={titleRef}
+                        className="text-[12vw] md:text-[8vw] lg:text-[7vw] font-black leading-[0.9] tracking-tighter mb-16"
+                    >
+                        <div className="overflow-hidden">
+                            <span className="word inline-block">CRAFTING</span>
+                        </div>
+                        <div className="overflow-hidden">
+                            <span className="word inline-block italic font-serif text-brand-accent">STORIES</span>
+                        </div>
+                        <div className="overflow-hidden">
+                            <span className="word inline-block">BEYOND</span>
+                        </div>
+                        <div className="overflow-hidden">
+                            <span className="word inline-block">LIMITS</span>
+                        </div>
                     </h1>
-                </header>
-                {/* <nav className="navbar navbar-expand-lg navbar-dark py-lg-4" id="mainNav">
-                    <div className="container">
-                        <a className="navbar-brand text-uppercase fw-bold d-lg-none" href="index.html">Start Bootstrap</a>
-                        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span className="navbar-toggler-icon"></span></button>
-                        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                            <ul className="navbar-nav mx-auto">
-                                <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="index.html">Home</a></li>
-                                <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="about.html">About</a></li>
-                                <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="products.html">Products</a></li>
-                                <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="store.html">Store</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </nav> */}
-                <section className="page-section clearfix">
-                    <div className="container">
-                        <div className="intro">
-                            <img className="intro-img img-fluid mb-3 mb-lg-0 rounded" src="/img/intro.jpg" alt="..." />
-                            <div className="intro-text left-0 text-center bg-faded p-5 rounded">
-                                <h2 className="section-heading mb-4">
-                                    <span className="section-heading-upper">Fresh Coffee</span>
-                                    <span className="section-heading-lower">Worth Drinking</span>
-                                </h2>
-                                <p className="mb-3">Every cup of our quality artisan coffee starts with locally sourced, hand picked ingredients. Once you try it, our coffee will be a blissful addition to your everyday morning routine - we guarantee it!</p>
-                                <div className="intro-button mx-auto"><a className="btn btn-primary btn-xl" href="#!">Visit Us Today!</a></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <section className="page-section cta">
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-xl-9 mx-auto">
-                                <div className="cta-inner bg-faded text-center rounded">
-                                    <h2 className="section-heading mb-4">
-                                        <span className="section-heading-upper">Our Promise</span>
-                                        <span className="section-heading-lower">To You</span>
-                                    </h2>
-                                    <p className="mb-0">When you walk into our shop to start your day, we are dedicated to providing you with friendly service, a welcoming atmosphere, and above all else, excellent products made with the highest quality ingredients. If you are not satisfied, please let us know and we will do whatever we can to make things right!</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-               
 
-            </body>
-        </div>
-    )
-}
+                    <div className="flex flex-col lg:flex-row items-end justify-between w-full border-t border-zinc-100 dark:border-zinc-900 pt-12">
+                        <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed mb-12 lg:mb-0">
+                            A minimalist sanctuary where high-performance engineering meets the art of digital storytelling. 
+                            Curated insights for the modern visionary.
+                        </p>
 
-export default Hero
+                        <div className="flex flex-col sm:flex-row items-center gap-8">
+                            <Link 
+                                to="/blog" 
+                                className="group relative flex items-center gap-2 text-sm font-bold uppercase tracking-widest link-underline py-2"
+                            >
+                                Browse Journal
+                                <ArrowUpRight size={18} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                            </Link>
+                            
+                            <Link to="/register" className="btn-editorial">
+                                Join Fellowship
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Background Texture - Subtle enough for "manual" feel */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <filter id="noise">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch" />
+                    </filter>
+                    <rect width="100%" height="100%" filter="url(#noise)" />
+                </svg>
+            </div>
+        </section>
+    );
+};
+
+export default Hero;

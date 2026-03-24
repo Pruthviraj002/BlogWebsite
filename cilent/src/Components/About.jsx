@@ -1,60 +1,105 @@
-import React from 'react'
+import React, { useRef } from 'react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-function About() {
-  return (
-    <div>
-         <body>
-        <header>
-            <h1 className="site-heading text-center text-faded d-none d-lg-block">
-                <span className="site-heading-upper text-primary mb-3">A Free Bootstrap Business Theme</span>
-                <span className="site-heading-lower">Business Casual</span>
-            </h1>
-        </header>
-        {/* <nav className="navbar navbar-expand-lg navbar-dark py-lg-4" id="mainNav">
-            <div className="container">
-                <a className="navbar-brand text-uppercase fw-bold d-lg-none" href="index.html">Start Bootstrap</a>
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span className="navbar-toggler-icon"></span></button>
-                <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul className="navbar-nav mx-auto">
-                        <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="index.html">Home</a></li>
-                        <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="about.html">About</a></li>
-                        <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="products.html">Products</a></li>
-                        <li className="nav-item px-lg-4"><a className="nav-link text-uppercase" href="store.html">Store</a></li>
-                    </ul>
+gsap.registerPlugin(ScrollTrigger);
+
+const About = () => {
+    const containerRef = useRef();
+    const imageRef = useRef();
+    const contentRef = useRef();
+
+    useGSAP(() => {
+        gsap.from(imageRef.current, {
+            scrollTrigger: {
+                trigger: imageRef.current,
+                start: "top 80%",
+            },
+            x: -100,
+            opacity: 0,
+            duration: 1.5,
+            ease: "power4.out"
+        });
+
+        gsap.from(contentRef.current.children, {
+            scrollTrigger: {
+                trigger: contentRef.current,
+                start: "top 80%",
+            },
+            x: 100,
+            opacity: 0,
+            duration: 1.2,
+            stagger: 0.2,
+            ease: "power4.out",
+            onComplete: () => {
+                // Trigger Counters
+                containerRef.current.querySelectorAll('.stat-counter').forEach(counter => {
+                    const target = parseFloat(counter.getAttribute('data-target'));
+                    gsap.to(counter, {
+                        innerText: target,
+                        duration: 2,
+                        snap: { innerText: 0.1 },
+                        ease: "power2.out",
+                    });
+                });
+            }
+        });
+    }, { scope: containerRef });
+
+    return (
+        <section ref={containerRef} className="py-32 px-6 lg:px-8 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+                <div ref={imageRef} className="flex-1 relative">
+                    <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border border-white/5">
+                        <img
+                            src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop"
+                            alt="Workspace"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    {/* Decorative Element */}
+                    <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-brand-primary/10 blur-3xl -z-10 rounded-full"></div>
                 </div>
-            </div>
-        </nav> */}
-        <section className="page-section about-heading">
-            <div className="container">
-                <img className="img-fluid rounded about-heading-img mb-3 mb-lg-0" src="./img/about.jpg" alt="..." />
-                <div className="about-heading-content">
-                    <div className="row">
-                        <div className="col-xl-9 col-lg-10 mx-auto">
-                            <div className="bg-faded rounded p-5">
-                                <h2 className="section-heading mb-4">
-                                    <span className="section-heading-upper">Strong Coffee, Strong Roots</span>
-                                    <span className="section-heading-lower">About Our Cafe</span>
-                                </h2>
-                                <p>Founded in 1987 by the Hernandez brothers, our establishment has been serving up rich coffee sourced from artisan farmers in various regions of South and Central America. We are dedicated to travelling the world, finding the best coffee, and bringing back to you here in our cafe.</p>
-                                <p className="mb-0">
-                                    We guarantee that you will fall in
-                                    <em>lust</em>
-                                    with our decadent blends the moment you walk inside until you finish your last sip. Join us for your daily routine, an outing with friends, or simply just to enjoy some alone time.
-                                </p>
-                            </div>
+
+                <div ref={contentRef} className="flex-1 space-y-8">
+                    <div className="space-y-4">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+                            Redefining the <br />
+                            <span className="gradient-text">Art of Publishing</span>
+                        </h2>
+                        <div className="w-20 h-1.5 bg-brand-primary rounded-full"></div>
+                    </div>
+
+                    <div className="space-y-6 text-gray-400 font-medium text-lg leading-relaxed">
+                        <p>
+                            LuminaBlog was born from a simple realization: the internet needed a sanctuary for purity in expression. We believe that great ideas deserve a stage that is as elegant as the thoughts themselves.
+                        </p>
+                        <p>
+                            Our platform is more than just a MERN stack application; it's a testament to the power of minimalist design and high-performance engineering. Every line of code and every pixel is optimized to ensure your voice is heard clearly.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-8">
+                        <div>
+                            <p className="text-3xl font-black text-white flex items-baseline">
+                                <span className="stat-counter" data-target="99.9">0</span>
+                                %
+                            </p>
+                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Uptime Glory</p>
+                        </div>
+                        <div>
+                            <p className="text-3xl font-black text-white flex items-baseline">
+                                <span className="stat-counter" data-target="10">0</span>
+                                ms
+                            </p>
+                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Response Time</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        {/* <footer className="footer text-faded text-center py-5">
-            <div className="container"><p className="m-0 small">Copyright &copy; Your Website 2023</p></div>
-        </footer> */}
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="js/scripts.js"></script>
-    </body>
-    </div>
-  )
-}
+    );
+};
 
-export default About
+export default About;

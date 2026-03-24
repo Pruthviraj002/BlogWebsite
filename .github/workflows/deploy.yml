@@ -1,0 +1,57 @@
+name: MERN Stack CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: |
+          Backend/package-lock.json
+          cilent/package-lock.json
+
+    # --- Backend CI ---
+    - name: Install Backend Dependencies
+      run: |
+        cd Backend
+        npm ci
+
+    - name: Backend Lint
+      run: |
+        cd Backend
+        # If you have a lint script, uncomment the line below
+        # npm run lint
+
+    # --- Frontend CI ---
+    - name: Install Frontend Dependencies
+      run: |
+        cd cilent
+        npm ci
+
+    - name: Frontend Lint
+      run: |
+        cd cilent
+        npm run lint
+
+    - name: Build Frontend
+      run: |
+        cd cilent
+        npm run build
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: cilent/dist

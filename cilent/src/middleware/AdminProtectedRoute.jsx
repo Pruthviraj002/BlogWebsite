@@ -2,17 +2,15 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const ProtectedRoute = () => {
+const AdminProtectedRoute = () => {
     const user = useSelector((state) => state.user.data);
+    const token = useSelector((state) => state.user.token);
 
-    // In a real app, you might check for a token in localStorage as well
-    const token = localStorage.getItem('token');
-
-    if (!token && !user) {
+    if (!token || !user?.isAdmin) {
         return <Navigate to="/login" replace />;
     }
 
     return <Outlet />;
 };
 
-export default ProtectedRoute;
+export default AdminProtectedRoute;

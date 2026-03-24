@@ -1,70 +1,114 @@
-import React, { useState } from 'react'
-import ClipLoader from "react-spinners/ClipLoader";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginStart, loginSuccess, loginFailure } from '../Slice/userSlice';
+import axios from 'axios';
+import { Mail, Lock, User, Loader2, Sparkles } from 'lucide-react';
 
-import Hero from '../Components/Hero'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import { register } from '../Slice/userSlice'
+const Register = () => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const { isLoading, error } = useSelector(state => state.user);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-function Register() {
-  const [user,setUser] = useState({name:"",email:"",password:""})
-  const [confirmPassword,setConfirmPassword] = useState("")
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const isLoading = useSelector(state=>state.user.isLoading)
-  const errorMessage = useSelector(state => state.user.errorMessage)
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        dispatch(loginStart());
+        try {
+            const res = await axios.post('http://localhost:5000/api/user', { name, email, password });
+            // Automatic login after registration
+            const loginRes = await axios.post('http://localhost:5000/api/user/login', { email, password });
+            dispatch(loginSuccess(loginRes.data.data));
+            navigate('/');
+        } catch (err) {
+            dispatch(loginFailure(err.response?.data?.message || "Registration failed"));
+        }
+    };
 
-  function handleChange(e) {
-    setUser({...user,[e.target.name]:e.target.value})
-  }
+    return (
+        <main className="pt-20 min-h-screen flex items-center justify-center p-4">
+            <div className="max-w-md w-full glass p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-primary to-brand-secondary"></div>
 
-  function handleConfirmPassword(e) {
-    setConfirmPassword(e.target.value)
-  }
+                <div className="text-center mb-10">
+                    <h1 className="text-4xl font-black mb-3 tracking-tight">Join <span className="gradient-text">Community</span></h1>
+                    <p className="text-gray-500 font-medium">Start your blogging journey today.</p>
+                </div>
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (confirmPassword && confirmPassword == user.password ) {
-      dispatch(register(user)).then(()=>{
-        navigate("/login")
-      })
-    } else {
-      alert("check password again !!!!!")
-    }
-    cls()
-  }
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm font-bold text-center">
+                        {error}
+                    </div>
+                )}
 
-  function cls() {
-    setUser({name:"",email:"",password:""},
-      setConfirmPassword("")
-    )
-  }
-  return (
-    <div>
-      <ClipLoader loading={isLoading}/>
-      {
-      errorMessage && <h1>{errorMessage}</h1>
-      }
-      <Hero/>
-      <div className="container">
-        <div className="row">
-          <div className="col-md-3"></div>
-          <div className="col-md-6 my-5">
-            <div className="card shadow-lg">
-              <form onSubmit={handleSubmit} className='form-control '>
-                <input type="text" placeholder='Enter your name' onChange={handleChange} name='name' className='form-control my-2' />
-                <input type="email" placeholder='Enter your email' onChange={handleChange} name='email' className='form-control my-2' />
-                <input type="password" placeholder='Enter your password' onChange={handleChange} name='password' className='form-control my-2' />
-                <input type="password" placeholder='Enter your confirm password'  onChange={handleConfirmPassword} className='form-control my-2' />
-                <input type="submit" value="register" className="btn btn-primary my-2" />
-              </form>
+                <form onSubmit={handleRegister} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Full Name</label>
+                        <div className="relative group">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary transition-colors" size={20} />
+                            <input
+                                type="text"
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="John Doe"
+                                className="w-full glass pl-12 pr-6 py-4 rounded-2xl outline-none focus:ring-2 ring-brand-primary/20 transition-all font-medium"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Email Address</label>
+                        <div className="relative group">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary transition-colors" size={20} />
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="name@lumina.com"
+                                className="w-full glass pl-12 pr-6 py-4 rounded-2xl outline-none focus:ring-2 ring-brand-primary/20 transition-all font-medium"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Password</label>
+                        <div className="relative group">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary transition-colors" size={20} />
+                            <input
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full glass pl-12 pr-6 py-4 rounded-2xl outline-none focus:ring-2 ring-brand-primary/20 transition-all font-medium"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full btn-modern py-4 flex items-center justify-center space-x-2"
+                    >
+                        {isLoading ? <Loader2 className="animate-spin" /> : (
+                            <>
+                                <span>Get Started</span>
+                                <Sparkles size={18} />
+                            </>
+                        )}
+                    </button>
+
+                    <p className="text-center text-gray-500 font-medium pt-4">
+                        Already a member? <Link to="/login" className="text-brand-primary hover:underline font-bold">Sign in</Link>
+                    </p>
+                </form>
             </div>
-          </div>
-          <div className="col-md-3"></div>
-        </div>
-      </div>
-    </div>
-  )
-}
+        </main>
+    );
+};
 
-export default Register
+export default Register;

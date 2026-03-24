@@ -1,15 +1,22 @@
-const { getBlog, postBlog, putBlog, deleteBlog } = require('../Controller/blogController')
-const { login } = require('../Controller/userController')
-const auth = require('../middleware/auth')
- 
+const express = require('express');
+const router = express.Router();
+const blogController = require('../Controller/blogController');
 
-const route = require("express").Router()
+const { verifyToken } = require('../middleware/authMiddleware');
 
-route.get("/", getBlog)
-route.post("/", auth, postBlog)
-route.post("/login", auth, login)
+const { validateBlog } = require('../middleware/validator');
 
-route.put("/:id", auth, putBlog)
-route.delete("/:id", auth, deleteBlog)
+router.get('/categories', blogController.getCategories);
 
-module.exports = route
+router.get('/', blogController.getBlogs);
+router.get('/:id', blogController.getBlogById);
+router.post('/', verifyToken, validateBlog, blogController.createBlog);
+router.put('/:id', verifyToken, validateBlog, blogController.updateBlog);
+router.delete('/:id', verifyToken, blogController.deleteBlog);
+
+// Interactions
+router.post('/:id/like', verifyToken, blogController.likeBlog);
+router.get('/:id/comments', blogController.getComments);
+router.post('/:id/comments', verifyToken, blogController.addComment);
+
+module.exports = router;

@@ -16,6 +16,26 @@ const userSchema = mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now()
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    bio: {
+        type: String,
+        default: ""
+    },
+    profilePic: {
+        type: String,
+        default: ""
+    },
+    savedBlogs: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Blog"
+    }],
+    isBlocked: {
+        type: Boolean,
+        default: false
     }
 })
 

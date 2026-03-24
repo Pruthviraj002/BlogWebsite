@@ -3,41 +3,53 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Loader2, Upload, Image as ImageIcon } from 'lucide-react';
 
-const AddBlog = () => {
+const EditBlog = () => {
+    const { id } = useParams();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState('');
     const [category, setCategory] = useState('');
     const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
-    const { data: user, token } = useSelector(state => state.user);
+    const { token } = useSelector(state => state.user);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/blog/categories');
-                setCategories(res.data.data);
-                if (res.data.data.length > 0) setCategory(res.data.data[0].name);
+                const [blogRes, catRes] = await Promise.all([
+                    axios.get(`http://localhost:5000/api/blog/${id}`),
+                    axios.get('http://localhost:5000/api/blog/categories')
+                ]);
+                const blog = blogRes.data.data;
+                setTitle(blog.title);
+                setContent(blog.content);
+                setImage(blog.image);
+                setCategory(blog.category);
+                setCategories(catRes.data.data);
             } catch (error) {
                 console.error(error);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchCategories();
-    }, [token]);
+        fetchData();
+    }, [id, token]);
 
     const handleSubmit = async () => {
         try {
-            await axios.post('http://localhost:5000/api/blog',
-                { title, content, category, image, userId: user._id },
+            await axios.put(`http://localhost:5000/api/blog/${id}`,
+                { title, content, category, image },
                 { headers: { 'auth-token': token } }
             );
-            navigate('/blog');
+            navigate('/admin');
         } catch (error) {
             console.error(error);
+            alert("Failed to update blog");
         }
     };
 
@@ -62,10 +74,16 @@ const AddBlog = () => {
         }
     };
 
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center pt-20">
+            <Loader2 className="animate-spin text-brand-primary" size={48} />
+        </div>
+    );
+
     return (
         <main className="pt-32 min-h-screen px-4 pb-20">
             <div className="max-w-5xl mx-auto glass p-10 rounded-[2rem]">
-                <h1 className="text-4xl font-black mb-10 tracking-tight">Compose <span className="gradient-text">Story</span></h1>
+                <h1 className="text-4xl font-black mb-10 tracking-tight">Edit <span className="gradient-text">Story</span></h1>
                 <div className="space-y-8">
                     <div className="grid md:grid-cols-2 gap-8">
                         <div>
@@ -75,7 +93,7 @@ const AddBlog = () => {
                                 onChange={(e) => setTitle(e.target.value)}
                                 type="text"
                                 placeholder="The future of Web..."
-                                className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20 transition-all"
+                                className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20 transition-all font-medium"
                             />
                         </div>
                         <div>
@@ -83,7 +101,7 @@ const AddBlog = () => {
                             <select
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full glass p-4 rounded-xl outline-none"
+                                className="w-full glass p-4 rounded-xl outline-none font-medium"
                             >
                                 <option value="">Select Category</option>
                                 {categories.map(cat => (
@@ -154,7 +172,7 @@ const AddBlog = () => {
                             onClick={handleSubmit}
                             className="btn-modern px-12"
                         >
-                            Publish Narrative
+                            Update Narrative
                         </button>
                     </div>
                 </div>
@@ -163,4 +181,4 @@ const AddBlog = () => {
     );
 };
 
-export default AddBlog;
+export default EditBlog;
