@@ -12,22 +12,25 @@ const Categories = () => {
     const containerRef = useRef();
     const headerRef = useRef();
     const gridRef = useRef();
+    const cardsRef = useRef([]);
 
     useGSAP(() => {
-        const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
+        if (categories.length > 0) {
+            const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
 
-        tl.from(headerRef.current, {
-            y: 50,
-            opacity: 0,
-        })
-        .from(".category-card", {
-            scale: 0.8,
-            opacity: 0,
-            stagger: 0.1,
-            duration: 0.8,
-            ease: "back.out(1.7)"
-        }, "-=0.6");
-    }, { scope: containerRef });
+            tl.from(headerRef.current, {
+                y: 50,
+                opacity: 0,
+            })
+            .from(cardsRef.current, {
+                scale: 0.8,
+                opacity: 0,
+                stagger: 0.1,
+                duration: 0.8,
+                ease: "back.out(1.7)"
+            }, "-=0.6");
+        }
+    }, { scope: containerRef, dependencies: [categories] });
 
     const fetchCategories = async () => {
         try {
@@ -84,6 +87,7 @@ const Categories = () => {
                         <Link 
                             to={`/blog?category=${cat.name}`} 
                             key={i}
+                            ref={el => cardsRef.current[i] = el}
                             className="category-card group bg-zinc-900/40 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden transition-all duration-500 hover:border-brand-primary/30"
                         >
                             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getRandomGradient(i)} opacity-10 blur-3xl group-hover:opacity-20 transition-opacity`}></div>

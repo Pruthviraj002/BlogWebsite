@@ -60,21 +60,23 @@ const Services = () => {
     ];
 
     useGSAP(() => {
-        // Use a more robust trigger and ensure elements are visible if scrollTrigger fails
+        // Ensure cards are visible immediately if GSAP fails
+        gsap.set(cardsRef.current, { opacity: 1, y: 0, scale: 1 });
+
         gsap.from(cardsRef.current, {
             scrollTrigger: {
                 trigger: container.current,
-                start: "top center+=200",
+                start: "top 80%",
                 toggleActions: "play none none none"
             },
-            y: 50,
+            y: 30,
             opacity: 0,
-            scale: 0.95,
-            duration: 1,
-            stagger: 0.1,
-            ease: "expo.out"
+            scale: 0.98,
+            duration: 0.8,
+            stagger: 0.05,
+            ease: "power2.out"
         });
-    }, { scope: container });
+    }, { scope: container, dependencies: [] });
 
     return (
         <section ref={container} className="py-16 px-6 lg:px-12 bg-zinc-950 text-white overflow-hidden border-t border-white/5">
