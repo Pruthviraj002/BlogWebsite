@@ -75,7 +75,7 @@ const SingleBlog = () => {
             toast.success(wasLiked ? "Unliked story" : "Liked story", {
                 icon: wasLiked ? '💔' : '❤️',
             });
-        } catch (error) {
+        } catch {
             toast.error("Failed to update like");
         }
     };
@@ -90,7 +90,7 @@ const SingleBlog = () => {
             toast.success(wasSaved ? "Removed from saved" : "Saved to library", {
                 icon: wasSaved ? '🗑️' : '🔖',
             });
-        } catch (error) {
+        } catch {
             toast.error("Failed to save story");
         }
     };
@@ -164,8 +164,7 @@ const SingleBlog = () => {
             await api.delete(`/blog/${id}`);
             toast.success("Story deleted successfully.");
             navigate('/blog');
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error("Failed to delete story.");
         }
     };
@@ -181,8 +180,7 @@ const SingleBlog = () => {
             setComments([res.data.data, ...comments]);
             setNewComment('');
             toast.success("Comment posted!", { id: loadingToast });
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error("Failed to post comment", { id: loadingToast });
         }
     };
@@ -198,8 +196,7 @@ const SingleBlog = () => {
             setReplyText('');
             setReplyTo(null);
             toast.success("Reply posted!", { id: loadingToast });
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error("Failed to post reply", { id: loadingToast });
         }
     };
