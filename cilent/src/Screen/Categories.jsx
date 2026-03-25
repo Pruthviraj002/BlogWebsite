@@ -16,6 +16,11 @@ const Categories = () => {
 
     useGSAP(() => {
         if (categories.length > 0) {
+            console.log("Categories loaded, starting animation:", categories.length);
+            
+            // Force immediate visibility fallback
+            gsap.set(cardsRef.current, { opacity: 1, scale: 1, y: 0 });
+
             const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
 
             tl.from(headerRef.current, {
@@ -36,9 +41,10 @@ const Categories = () => {
         try {
             setLoading(true);
             const res = await axios.get(`${API_BASE_URL}/blog/categories`);
+            console.log("Categories API Response:", res.data);
             setCategories(res.data.data || []);
         } catch (error) {
-            console.error(error);
+            console.error("Categories Fetch Error:", error);
         } finally {
             setLoading(false);
         }
@@ -81,43 +87,60 @@ const Categories = () => {
                     <Loader2 className="animate-spin text-brand-primary" size={64} strokeWidth={1} />
                     <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Architecting Knowledge...</p>
                 </div>
-            ) : categories.length > 0 ? (
-                <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {categories.map((cat, i) => (
-                        <Link 
-                            to={`/blog?category=${cat.name}`} 
-                            key={i}
-                            ref={el => cardsRef.current[i] = el}
-                            className="category-card group bg-zinc-900/40 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden transition-all duration-500 hover:border-brand-primary/30"
-                        >
-                            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getRandomGradient(i)} opacity-10 blur-3xl group-hover:opacity-20 transition-opacity`}></div>
-                            
-                            <div className="relative z-10 space-y-6">
-                                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-tr ${getRandomGradient(i)} flex items-center justify-center text-white shadow-xl shadow-black/20 group-hover:scale-110 transition-transform duration-500`}>
-                                    <Layout size={28} />
-                                </div>
-                                
-                                <div className="space-y-2">
-                                    <h2 className="text-3xl font-black tracking-tight group-hover:text-brand-accent transition-colors">
-                                        {cat.name}
-                                    </h2>
-                                    <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest">
-                                        {cat.count || 0} Stories Published
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center space-x-2 text-brand-primary font-bold text-sm tracking-wide opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
-                                    <span>Explore Category</span>
-                                    <ArrowRight size={16} />
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
             ) : (
-                <div className="text-center py-24 glass rounded-[4rem] border border-white/5">
-                    <p className="text-zinc-500 font-medium text-lg italic">No categories found yet. The sanctuary is still growing.</p>
-                </div>
+                <>
+                    {categories.length > 0 ? (
+                        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {categories.map((cat, i) => (
+                                <Link 
+                                    to={`/blog?category=${cat.name}`} 
+                                    key={i}
+                                    ref={el => cardsRef.current[i] = el}
+                                    className="category-card group bg-zinc-900/40 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden transition-all duration-500 hover:border-brand-primary/30"
+                                >
+                                    <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getRandomGradient(i)} opacity-10 blur-3xl group-hover:opacity-20 transition-opacity`}></div>
+                                    
+                                    <div className="relative z-10 space-y-6">
+                                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-tr ${getRandomGradient(i)} flex items-center justify-center text-white shadow-xl shadow-black/20 group-hover:scale-110 transition-transform duration-500`}>
+                                            <Layout size={28} />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <h2 className="text-3xl font-black tracking-tight group-hover:text-brand-accent transition-colors">
+                                                {cat.name}
+                                            </h2>
+                                            <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest">
+                                                {cat.count || 0} Stories Published
+                                            </p>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2 text-brand-primary font-bold text-sm tracking-wide opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+                                            <span>Explore Category</span>
+                                            <ArrowRight size={16} />
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-24 glass rounded-[4rem] border border-white/5">
+                            <p className="text-zinc-500 font-medium text-lg italic mb-8 text-white">No topics found. Be the first to start a conversation.</p>
+                            <Link to="/register" className="btn-modern px-10 py-4 inline-block">Join Sanctuary</Link>
+                        </div>
+                    )}
+
+                    {/* Guest Guidance Section */}
+                    <div className="mt-20 glass p-12 rounded-[3rem] border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="text-left space-y-4">
+                            <h3 className="text-3xl font-black tracking-tight">Ready to Share Your <span className="gradient-text">Perspective?</span></h3>
+                            <p className="text-zinc-400 font-medium">Lumina collectors and writers enjoy full ownership of their narratives.</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Link to="/login" className="text-zinc-400 font-bold hover:text-white transition-colors">Login to Create</Link>
+                            <Link to="/register" className="btn-modern px-8 py-3">Get Started</Link>
+                        </div>
+                    </div>
+                </>
             )}
         </main>
     );

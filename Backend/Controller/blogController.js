@@ -6,8 +6,10 @@ const Category = require("../Model/category");
 exports.getCategories = async (req, res) => {
     try {
         const categories = await Category.find();
+        console.log(`[Backend] Found ${categories.length} categories in DB`);
         res.json({ errors: false, data: categories });
     } catch (error) {
+        console.error("[Backend] getCategories Error:", error.message);
         res.status(500).json({ errors: true, message: error.message });
     }
 };
