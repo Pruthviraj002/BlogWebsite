@@ -113,13 +113,53 @@ const seedData = async () => {
             },
             {
                 title: "10 Startup Lessons from the Trenches",
-                content: "Launching a startup is a series of highs and lows. After five years of building Lumina, I've learned that product-market fit is the only metric that truly matters in the beginning. In this post, I share the hard lessons on hiring, pivoting, and maintaining a clear vision when everything seems to be going wrong at once.",
+                content: "Launching a startup is a series of highs and lows. After five years of building Lumina, I've learned that product-market fit is the only metric that truly matters in the beginning. In this post, I share the hard lessons on hiring, pivoting, and maintaining a clear vision when everything seems to be going wrong at once. We explore the emotional resilience required to lead a team through uncertainty and how to turn failures into strategic advantages.",
                 excerpt: "Hard-earned insights on hiring, pivoting, and maintaining vision.",
                 image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2024&auto=format&fit=crop",
                 category: "Startup",
                 userId: adminId,
                 status: "Published",
                 tags: ["Startup", "Entrepreneurship", "Lessons"]
+            },
+            {
+                title: "Mastering TypeScript: Beyond the Basics",
+                content: "TypeScript has become the industry standard for scalable JavaScript applications. But are you using it to its full potential? In this article, we explore advanced patterns like mapped types, conditional types, and utility types that can make your codebase significantly more robust. We also discuss how to effectively integrate TS into existing MERN projects without overwhelming your development team.",
+                excerpt: "Level up your development workflow with advanced TypeScript patterns and utility types.",
+                image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80&w=2128&auto=format&fit=crop",
+                category: "Coding",
+                userId: markId,
+                status: "Published",
+                tags: ["TypeScript", "Coding", "WebDev"]
+            },
+            {
+                title: "The Clean Code Manifesto for Modern Teams",
+                content: "Writing code that works is easy; writing code that lasts is an art. We revisit the principles of Clean Code—meaningful names, small functions, and DRY principles—updated for the era of functional React components and asynchronous Node.js. Learn how to conduct better code reviews and build a culture of technical excellence within your engineering organization.",
+                excerpt: "Why readability is the most important feature of your professional codebase.",
+                image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2070&auto=format&fit=crop",
+                category: "Coding",
+                userId: markId,
+                status: "Published",
+                tags: ["Clean Code", "Engineering", "Best Practices"]
+            },
+            {
+                title: "Curating a Minimalist Workspace for Focus",
+                content: "Environment plays a crucial role in our productivity and mental well-being. A minimalist workspace isn't just about aesthetics; it's about removing cognitive load. From choosing the right ergonomic lighting to cable management and the 'one-item-on-desk' rule—discover how to design a physical environment that supports deep work and creative flow.",
+                excerpt: "How to design a physical environment that supports deep work and creative flow.",
+                image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop",
+                category: "Lifestyle",
+                userId: janeId,
+                status: "Published",
+                tags: ["Mindfulness", "Productivity", "Workspace"]
+            },
+            {
+                title: "Slow Living in a High-Speed Digital Age",
+                content: "The pressure to be constantly 'on' is leading to unprecedented levels of burnout. Slow living is an intentional movement that prioritizes quality over quantity and presence over performance. We discuss practical ways to disconnect, the benefits of digital detoxes, and how to reclaim your time for the things that truly bring you joy without sacrificing professional ambition.",
+                excerpt: "Reclaiming your time and mental clarity through intentional living.",
+                image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2024&auto=format&fit=crop",
+                category: "Lifestyle",
+                userId: janeId,
+                status: "Published",
+                tags: ["Wellness", "Slow Living", "Balance"]
             }
         ];
 

@@ -141,7 +141,11 @@ exports.addComment = async (req, res) => {
 
 exports.getComments = async (req, res) => {
     try {
-        const comments = await Comment.find({ blog: req.params.id })
+        const { id } = req.params;
+        if (!require('mongoose').Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ errors: true, message: "Invalid Blog ID" });
+        }
+        const comments = await Comment.find({ blog: id })
             .populate("user", "name profilePic")
             .populate("replies.user", "name profilePic")
             .sort("-createdAt");
@@ -174,7 +178,11 @@ exports.replyToComment = async (req, res) => {
 
 exports.getBlogById = async (req, res) => {
     try {
-        const blog = await Blog.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true }).populate('userId', 'name email');
+        const { id } = req.params;
+        if (!require('mongoose').Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ errors: true, message: "Invalid Blog ID" });
+        }
+        const blog = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true }).populate('userId', 'name email');
         if (!blog) return res.status(404).json({ errors: true, message: "Blog not found" });
         res.json({ errors: false, data: blog });
     } catch (error) {

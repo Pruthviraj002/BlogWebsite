@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Heart, Bookmark, Share2, Download, MessageCircle, Send, Edit3, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Heart, Bookmark, Share2, Download, MessageCircle, Send, Edit3, Trash2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -10,6 +10,7 @@ import { updateUserInfo } from '../Slice/userSlice';
 import { getSafeImageUrl } from '../config';
 import api from '../utils/api';
 import { SingleBlogSkeleton } from '../Component/Skeleton';
+import toast from 'react-hot-toast';
 
 const SingleBlog = () => {
     const { id } = useParams();
@@ -22,6 +23,7 @@ const SingleBlog = () => {
     const [replyTo, setReplyTo] = useState(null);
     const [replyText, setReplyText] = useState('');
     const [loading, setLoading] = useState(true);
+    const [isDownloading, setIsDownloading] = useState(false);
     const { data: user, token } = useSelector(state => state.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -61,38 +63,60 @@ const SingleBlog = () => {
     }, [id, user]);
 
     const handleLike = async () => {
-        if (!token) return alert("Please login to like");
+        if (!token) return toast.error("Please login to like");
         try {
             await api.post(`/blog/${id}/like`);
+            const wasLiked = isLiked;
             setIsLiked(!isLiked);
             setBlog(prev => ({
                 ...prev,
-                likes: isLiked ? prev.likes.filter(l => l !== user._id) : [...prev.likes, user._id]
+                likes: wasLiked ? prev.likes.filter(l => l !== user._id) : [...prev.likes, user._id]
             }));
+            toast.success(wasLiked ? "Unliked story" : "Liked story", {
+                icon: wasLiked ? '💔' : '❤️',
+            });
         } catch (error) {
-            console.error(error);
+            toast.error("Failed to update like");
         }
     };
 
     const handleSave = async () => {
-        if (!token) return alert("Please login to save stories");
+        if (!token) return toast.error("Please login to save stories");
         try {
             const res = await api.put(`/user/save/${id}`);
             dispatch(updateUserInfo(res.data.data));
+            const wasSaved = isSaved;
             setIsSaved(!isSaved);
+            toast.success(wasSaved ? "Removed from saved" : "Saved to library", {
+                icon: wasSaved ? '🗑️' : '🔖',
+            });
         } catch (error) {
-            console.error(error);
+            toast.error("Failed to save story");
         }
     };
 
-    const handleShare = () => {
-        navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: blog.title,
+                    text: `Check out this amazing story: ${blog.title}`,
+                    url: window.location.href,
+                });
+            } catch (error) {
+                console.log("Error sharing", error);
+            }
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success("Link copied to clipboard!", { icon: '🔗' });
+        }
     };
 
     const handleDownload = async () => {
         const element = document.getElementById('blog-article');
         if (!element) return;
+        setIsDownloading(true);
+        const loadingToast = toast.loading("Generating PDF...");
 
         try {
             const canvas = await html2canvas(element, {
@@ -107,19 +131,9 @@ const SingleBlog = () => {
                         // Inject safe CSS to override problematic modern colors
                         const style = clonedDoc.createElement('style');
                         style.innerHTML = `
-                            #blog-article * {
-                                color-scheme: dark !important;
-                            }
-                            .gradient-text {
-                                background: none !important;
-                                -webkit-text-fill-color: #6366f1 !important;
-                                color: #6366f1 !important;
-                            }
-                            .glass {
-                                background: rgba(255, 255, 255, 0.03) !important;
-                                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                                backdrop-filter: none !important;
-                            }
+                            #blog-article * { color-scheme: dark !important; }
+                            .gradient-text { background: none !important; -webkit-text-fill-color: #6366f1 !important; color: #6366f1 !important; }
+                            .glass { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; backdrop-filter: none !important; }
                             .bg-brand-primary { background-color: #6366f1 !important; }
                             .text-brand-primary { color: #6366f1 !important; }
                             .bg-brand-secondary { background-color: #a855f7 !important; }
@@ -136,9 +150,11 @@ const SingleBlog = () => {
 
             pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`${blog.title}.pdf`);
+            toast.success("Story downloaded as PDF!", { id: loadingToast, icon: '📄' });
         } catch (error) {
-            console.error("PDF generation failed", error);
-            alert("PDF generation failed: " + error.message);
+            toast.error("Download failed: " + error.message, { id: loadingToast });
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -146,36 +162,45 @@ const SingleBlog = () => {
         if (!window.confirm("Are you sure you want to delete this story?")) return;
         try {
             await api.delete(`/blog/${id}`);
-            alert("Story deleted successfully.");
+            toast.success("Story deleted successfully.");
             navigate('/blog');
         } catch (error) {
             console.error(error);
-            alert("Failed to delete story.");
+            toast.error("Failed to delete story.");
         }
     };
 
     const handleComment = async (e) => {
         e.preventDefault();
-        if (!token) return alert("Please login to comment");
+        if (!token) return toast.error("Please login to comment");
+        if (!newComment.trim()) return;
+        
+        const loadingToast = toast.loading("Posting comment...");
         try {
             const res = await api.post(`/blog/${id}/comments`, { text: newComment });
             setComments([res.data.data, ...comments]);
             setNewComment('');
+            toast.success("Comment posted!", { id: loadingToast });
         } catch (error) {
             console.error(error);
+            toast.error("Failed to post comment", { id: loadingToast });
         }
     };
 
     const handleReply = async (commentId) => {
-        if (!token) return alert("Please login to reply");
+        if (!token) return toast.error("Please login to reply");
         if (!replyText.trim()) return;
+
+        const loadingToast = toast.loading("Posting reply...");
         try {
             const res = await api.post(`/blog/comments/${commentId}/replies`, { text: replyText });
             setComments(comments.map(c => c._id === commentId ? res.data.data : c));
             setReplyText('');
             setReplyTo(null);
+            toast.success("Reply posted!", { id: loadingToast });
         } catch (error) {
             console.error(error);
+            toast.error("Failed to post reply", { id: loadingToast });
         }
     };
 
@@ -265,9 +290,14 @@ const SingleBlog = () => {
                                 </button>
                                 <button
                                     onClick={handleDownload}
-                                    className="p-3 rounded-2xl glass text-gray-400 hover:text-white transition-all"
+                                    disabled={isDownloading}
+                                    className={`p-3 rounded-2xl glass text-gray-400 hover:text-white transition-all ${isDownloading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <Download size={20} />
+                                    {isDownloading ? (
+                                        <Loader2 className="animate-spin" size={20} />
+                                    ) : (
+                                        <Download size={20} />
+                                    )}
                                 </button>
 
                                 {(user?._id === blog.userId?._id || user?.isAdmin) && (

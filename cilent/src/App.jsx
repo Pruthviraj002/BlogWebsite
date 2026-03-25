@@ -1,5 +1,6 @@
 import './App.css'
 import Navbar from './Components/Navbar'
+import { Toaster } from 'react-hot-toast'
 import { Route, Routes } from 'react-router-dom'
 import Home from './Screen/Home'
 import About from './Screen/About'
@@ -25,6 +26,7 @@ function App() {
     return (
         <>
             <Navbar />
+            <Toaster position="top-center" reverseOrder={false} />
             <div className={isLoading ? 'loader' : ''}>
                 <ClipLoader size={100} loading={isLoading} color='white' />
             </div>

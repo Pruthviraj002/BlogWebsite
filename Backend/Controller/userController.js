@@ -68,10 +68,10 @@ exports.deleteUser = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const UserExist = await User.findOne({ email: req.body.email });
-        if (!UserExist) return res.status(500).json({ errors: true, message: "email or password is invalid" });
+        if (!UserExist) return res.status(401).json({ errors: true, message: "email or password is invalid" });
 
         const comparePassword = await bcrypt.compare(req.body.password, UserExist.password);
-        if (!comparePassword) return res.status(500).json({ errors: true, message: "email or password is invalid" });
+        if (!comparePassword) return res.status(401).json({ errors: true, message: "email or password is invalid" });
 
         if (!process.env.SEC) throw new Error("JWT Secret is undefined");
 
