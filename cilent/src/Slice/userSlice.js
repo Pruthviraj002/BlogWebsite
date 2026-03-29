@@ -7,10 +7,15 @@ const userSlice = createSlice({
         token: localStorage.getItem('token') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
         isLoading: false,
+        isEditModalOpen: false,
         error: null,
     },
     reducers: {
+        toggleEditModal: (state, action) => {
+            state.isEditModalOpen = action.payload;
+        },
         loginStart: (state) => {
+
             state.isLoading = true;
         },
         loginSuccess: (state, action) => {
@@ -47,5 +52,5 @@ const userSlice = createSlice({
     },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, updateUserInfo, updateToken } = userSlice.actions;
+export const { toggleEditModal, loginStart, loginSuccess, loginFailure, logout, updateUserInfo, updateToken } = userSlice.actions;
 export default userSlice.reducer;

@@ -9,9 +9,22 @@ import { getSafeImageUrl } from '../config';
 
 gsap.registerPlugin(ScrollTrigger);
 
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleEditModal } from '../Slice/userSlice';
+
 const BlogCard = ({ blog, actions }) => {
     const cardRef = useRef();
     const imageRef = useRef();
+    const { data: user } = useSelector(state => state.user);
+    const dispatch = useDispatch();
+
+    const handleAuthorClick = (e) => {
+        if (user && blog.userId?._id === user._id) {
+            e.preventDefault();
+            dispatch(toggleEditModal(true));
+        }
+    };
+
 
     useGSAP(() => {
         gsap.from(cardRef.current, {
@@ -54,11 +67,24 @@ const BlogCard = ({ blog, actions }) => {
                     <span>{new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                 </div>
 
-                <Link to={`/blog/${blog._id}`} className="block group/title">
-                    <h3 className="text-2xl font-bold mb-4 leading-tight group-hover/title:text-brand-accent transition-colors duration-300">
-                        {blog.title}
-                    </h3>
-                </Link>
+                <div className="flex items-center justify-between mb-4">
+                    <Link to={`/blog/${blog._id}`} className="block group/title">
+                        <h3 className="text-2xl font-bold leading-tight group-hover/title:text-brand-accent transition-colors duration-300">
+                            {blog.title}
+                        </h3>
+                    </Link>
+                    <Link 
+                        to={`/user/${blog.userId?._id}`} 
+                        onClick={handleAuthorClick}
+                        className="flex-shrink-0 hover:opacity-80 transition-opacity" 
+                        title={user && blog.userId?._id === user._id ? "Edit your profile" : `View ${blog.userId?.name}'s profile`}
+                    >
+                        <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-[10px] font-black text-brand-primary border border-brand-primary/20">
+                            {blog.userId?.name?.[0]}
+                        </div>
+                    </Link>
+
+                </div>
 
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8 line-clamp-2 leading-relaxed font-medium">
                     {blog.excerpt || "Exploring the intersection of modern design philosophy and technical excellence."}

@@ -1,0 +1,19 @@
+node_modules/
+.env
+.DS_Store
+dist/
+build/
+.next/
+.gemini/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+.vscode/
+
+# Ignore project-specific sensitive files if any
+Backend/.env
+admin/backend/.env
+cilent/.env
+admin/frontend/.env

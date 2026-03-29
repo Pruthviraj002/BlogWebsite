@@ -2,6 +2,7 @@ const Blog = require("../Model/blog");
 const User = require("../Model/user");
 const Comment = require("../Model/comment");
 const Category = require("../Model/category");
+const Message = require("../Model/message");
 
 exports.getAnalytics = async (req, res) => {
     try {
@@ -104,6 +105,24 @@ exports.deleteCategory = async (req, res) => {
     try {
         await Category.findByIdAndDelete(req.params.id);
         res.json({ errors: false, message: "Category deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ errors: true, message: error.message });
+    }
+};
+
+exports.getAllMessages = async (req, res) => {
+    try {
+        const messages = await Message.find().sort("-createdAt");
+        res.json({ errors: false, data: messages });
+    } catch (error) {
+        res.status(500).json({ errors: true, message: error.message });
+    }
+};
+
+exports.deleteMessage = async (req, res) => {
+    try {
+        await Message.findByIdAndDelete(req.params.id);
+        res.json({ errors: false, message: "Message deleted successfully" });
     } catch (error) {
         res.status(500).json({ errors: true, message: error.message });
     }

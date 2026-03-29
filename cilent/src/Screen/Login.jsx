@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
-import { loginStart, loginSuccess, loginFailure } from '../Slice/userSlice';
-import api from '../utils/api';
-import { gsap } from 'gsap';
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import toast from 'react-hot-toast';
+import api from '../utils/api';
+import { loginStart, loginSuccess, loginFailure } from '../Slice/userSlice';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -27,13 +28,26 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        
+        if (!email || !password) {
+            return toast.error("Please fill all fields");
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return toast.error("Please enter a valid email address");
+        }
+
         dispatch(loginStart());
         try {
             const res = await api.post(`/user/login`, { email, password });
-            dispatch(loginSuccess(res.data.data)); // Assumes backend returns { user, token, refreshToken }
+            dispatch(loginSuccess(res.data.data)); 
+            toast.success(`Welcome back!`);
             navigate('/');
         } catch (err) {
-            dispatch(loginFailure(err.response?.data?.message || "Login failed"));
+            const errMsg = err.response?.data?.message || "Login failed";
+            dispatch(loginFailure(errMsg));
+            toast.error(errMsg);
         }
     };
 
@@ -44,7 +58,7 @@ const Login = () => {
 
                 <div className="text-center mb-10">
                     <h1 className="text-4xl font-black mb-3 tracking-tight">Welcome <span className="gradient-text">Back</span></h1>
-                    <p className="text-gray-500 font-medium">Continue your Lumina journey.</p>
+                    <p className="text-gray-500 font-medium">Continue your CodeStories journey.</p>
                 </div>
 
                 {error && (
@@ -63,7 +77,7 @@ const Login = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@lumina.com"
+                                placeholder="name@codestories.com"
                                 className="w-full glass pl-12 pr-6 py-4 rounded-2xl outline-none focus:ring-2 ring-brand-primary/20 transition-all font-medium"
                             />
                         </div>

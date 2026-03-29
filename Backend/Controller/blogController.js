@@ -73,6 +73,7 @@ exports.getBlogs = async (req, res) => {
                 }
             },
             { $unwind: "$user" },
+            { $match: { "user.isBlocked": { $ne: true } } },
             {
                 $lookup: {
                     from: "comments",
@@ -182,8 +183,12 @@ exports.getBlogById = async (req, res) => {
         if (!require('mongoose').Types.ObjectId.isValid(id)) {
             return res.status(400).json({ errors: true, message: "Invalid Blog ID" });
         }
-        const blog = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true }).populate('userId', 'name email');
+        const blog = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true }).populate('userId', 'name email isBlocked');
         if (!blog) return res.status(404).json({ errors: true, message: "Blog not found" });
+
+        if (blog.userId && blog.userId.isBlocked) {
+            return res.status(403).json({ errors: true, message: "This blog is currently unavailable." });
+        }
         res.json({ errors: false, data: blog });
     } catch (error) {
         res.status(500).json({ errors: true, message: error.message });

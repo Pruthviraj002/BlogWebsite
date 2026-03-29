@@ -8,15 +8,20 @@ require("dotenv").config()
 const BlogRoute = require("./Routes/blogRoute")
 const UserRoute = require("./Routes/userRoute")
 const AdminRoute = require("./Routes/adminRoute")
+const ContactRoute = require("./Routes/contactRoute")
 const cors = require('cors')
 
 const app = express()
+
+app.use(cors())
+app.use(express.json())
 
 // Security Middleware
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const { errorHandler } = require('./middleware/errorMiddleware');
+const maintenanceMiddleware = require('./middleware/maintenanceMiddleware');
 
 app.use(helmet({
     crossOriginResourcePolicy: false,
@@ -26,7 +31,7 @@ app.use(mongoSanitize());
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    max: 1000 // Increased for active development
 });
 app.use('/api/', limiter);
 
@@ -39,8 +44,6 @@ const authLimiter = rateLimit({
 app.use('/api/user/login', authLimiter);
 app.use('/api/user/register', authLimiter);
 
-app.use(cors())
-app.use(express.json())
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 // Cloudinary Configuration
@@ -98,9 +101,13 @@ app.get("/health", (req, res) => {
     res.json({ status: "ok", db: mongoose.connection.readyState === 1 ? "connected" : "disconnected" });
 });
 
+// Primary Guard: Check for Maintenance BEFORE any api routes
+app.use(maintenanceMiddleware);
+
 app.use("/api/blog", BlogRoute)
 app.use("/api/user", UserRoute)
 app.use("/api/admin", AdminRoute)
+app.use("/api/contact", ContactRoute)
 
 // Global Error Handler
 app.use(errorHandler);

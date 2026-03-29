@@ -6,6 +6,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { getSafeImageUrl } from '../config';
 import api from '../utils/api';
+import toast from 'react-hot-toast';
 
 const AddBlog = () => {
     const [title, setTitle] = useState('');
@@ -33,11 +34,25 @@ const AddBlog = () => {
     }, []);
 
     const handleSubmit = async () => {
+        if (!title || !category || !content) {
+            return toast.error("Please fill all required fields");
+        }
+
+        if (title.length < 5) {
+            return toast.error("Title must be at least 5 characters");
+        }
+
+        if (content.length < 20) {
+            return toast.error("Content is too short (min 20 characters)");
+        }
+
         try {
             const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
             await api.post(`/blog`, { title, content, category, image, status, tags: tagsArray, userId: user._id });
+            toast.success("Narrative published successfully!");
             navigate('/blog');
         } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to publish narrative");
             console.error(error);
         }
     };
@@ -170,13 +185,15 @@ const AddBlog = () => {
                         </div>
                     </div>
 
-                    <div className="quill-container">
-                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Content Body</label>
+                    <div className="quill-container rounded-2xl overflow-hidden border border-white/5 bg-white/5">
+                        <div className="px-6 pt-6">
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Narrative Body</label>
+                        </div>
                         <ReactQuill
                             theme="snow"
                             value={content}
                             onChange={setContent}
-                            className="bg-white/5 rounded-2xl overflow-hidden border-none text-white"
+                            className="text-white"
                         />
                     </div>
 

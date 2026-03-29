@@ -27,6 +27,12 @@ api.interceptors.response.use(
         return response;
     },
     async (error) => {
+        if (error.response?.status === 503 && error.response?.data?.maintenanceStatus) {
+            // Site is in maintenance mode
+            window.location.href = '/maintenance';
+            return Promise.reject(error);
+        }
+
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;

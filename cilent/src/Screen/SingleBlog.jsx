@@ -6,7 +6,8 @@ import { ArrowLeft, Calendar, Heart, Bookmark, Share2, Download, MessageCircle, 
 import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { updateUserInfo } from '../Slice/userSlice';
+import { updateUserInfo, toggleEditModal } from '../Slice/userSlice';
+
 import { getSafeImageUrl } from '../config';
 import api from '../utils/api';
 import { SingleBlogSkeleton } from '../Component/Skeleton';
@@ -27,6 +28,14 @@ const SingleBlog = () => {
     const { data: user, token } = useSelector(state => state.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const handleUserClick = (e, userId) => {
+        if (user && userId === user._id) {
+            e.preventDefault();
+            dispatch(toggleEditModal(true));
+        }
+    };
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -248,7 +257,13 @@ const SingleBlog = () => {
                         </h1>
 
                         <div className="flex items-center justify-between border-y border-white/5 py-6">
-                            <div className="flex items-center space-x-4">
+                            <Link 
+                                to={`/user/${blog.userId?._id}`} 
+                                onClick={(e) => handleUserClick(e, blog.userId?._id)}
+                                className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
+                                title={user && blog.userId?._id === user._id ? "Edit your profile" : `View ${blog.userId?.name}'s profile`}
+                            >
+
                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-primary to-brand-secondary flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/20">
                                     {blog.userId?.name?.[0]}
                                 </div>
@@ -263,7 +278,7 @@ const SingleBlog = () => {
                                         <span>{Math.ceil((blog.content?.split(' ').length || 0) / 200)} min read</span>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
 
                             <div className="flex items-center space-x-4">
                                 <button
@@ -346,13 +361,19 @@ const SingleBlog = () => {
                         <div className="space-y-6">
                             {comments.map((comment) => (
                                 <div key={comment._id} className="p-6 bg-white/5 rounded-2xl border border-white/5">
-                                    <div className="flex items-center space-x-3 mb-3">
+                                    <Link 
+                                        to={`/user/${comment.user?._id}`} 
+                                        onClick={(e) => handleUserClick(e, comment.user?._id)}
+                                        className="flex items-center space-x-3 mb-3 hover:opacity-80 transition-opacity"
+                                        title={user && comment.user?._id === user._id ? "Edit your profile" : `View ${comment.user?.name}'s profile`}
+                                    >
+
                                         <div className="w-8 h-8 rounded-lg bg-gray-700 flex items-center justify-center text-xs font-bold uppercase">
                                             {comment.user?.name?.[0]}
                                         </div>
                                         <p className="font-bold text-sm">{comment.user?.name}</p>
                                         <span className="text-gray-500 text-xs">• {new Date(comment.createdAt).toLocaleDateString()}</span>
-                                    </div>
+                                    </Link>
                                     <p className="text-gray-400 leading-relaxed mb-4">{comment.text}</p>
                                     
                                     <div className="flex items-center gap-4">

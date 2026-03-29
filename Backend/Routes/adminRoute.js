@@ -17,4 +17,7 @@ router.get("/categories", adminController.getAllCategories);
 router.post("/categories", adminController.createCategory);
 router.delete("/categories/:id", adminController.deleteCategory);
 
+router.get("/messages", adminController.getAllMessages);
+router.delete("/messages/:id", adminController.deleteMessage);
+
 module.exports = router;

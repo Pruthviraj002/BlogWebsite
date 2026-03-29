@@ -95,18 +95,6 @@ const Sidebar = () => {
                 </div>
             </div>
 
-            {/* Social Connect */}
-            <div className="flex items-center justify-center gap-6 py-6 border-t border-zinc-100 dark:border-zinc-900">
-                <a href="#" className="p-3 rounded-full glass hover:text-brand-accent transition-all hover:-translate-y-1">
-                    <Instagram size={20} />
-                </a>
-                <a href="#" className="p-3 rounded-full glass hover:text-brand-accent transition-all hover:-translate-y-1">
-                    <Twitter size={20} />
-                </a>
-                <a href="#" className="p-3 rounded-full glass hover:text-brand-accent transition-all hover:-translate-y-1">
-                    <Github size={20} />
-                </a>
-            </div>
         </aside>
     );
 };

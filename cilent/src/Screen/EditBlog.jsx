@@ -6,6 +6,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { getSafeImageUrl } from '../config';
 import api from '../utils/api';
+import toast from 'react-hot-toast';
 
 const EditBlog = () => {
     const { id } = useParams();
@@ -46,18 +47,30 @@ const EditBlog = () => {
     }, [id]);
 
     const handleSubmit = async () => {
+        if (!title || !category || !content) {
+            return toast.error("Please fill all required fields");
+        }
+
+        if (title.length < 5) {
+            return toast.error("Title must be at least 5 characters");
+        }
+
+        if (content.length < 20) {
+            return toast.error("Content is too short (min 20 characters)");
+        }
+
         try {
             const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
             await api.put(`/blog/${id}`, { title, content, category, image, status, tags: tagsArray });
-            alert("Narrative updated!");
+            toast.success("Narrative updated successfully!");
             if (user?.isAdmin) {
                 navigate('/admin');
             } else {
                 navigate('/profile');
             }
         } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to update blog");
             console.error(error);
-            alert("Failed to update blog");
         }
     };
 

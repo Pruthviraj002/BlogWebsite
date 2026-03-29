@@ -3,14 +3,17 @@ import { Link, NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
     LogOut,
-    Ghost,
+    BookOpen, // Changed from Ghost to BookOpen
     X,
     Menu,
     LogIn,
-    UserPlus
+    UserPlus,
+    UserCircle
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../Slice/userSlice';
+import { logout, toggleEditModal } from '../Slice/userSlice';
+import { getSafeImageUrl } from '../config';
+
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -28,11 +31,11 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2 group">
-                        <div className="p-2.5 bg-gradient-to-tr from-brand-primary to-brand-secondary rounded-2xl shadow-lg shadow-indigo-500/20 group-hover:rotate-12 transition-all duration-300">
-                            <Ghost className="w-6 h-6 text-white" />
+                        <div className="p-2 bg-gradient-to-tr from-brand-primary to-brand-secondary rounded-xl shadow-lg shadow-indigo-500/20 group-hover:rotate-6 transition-transform">
+                            <BookOpen className="w-6 h-6 text-white" />
                         </div>
                         <span className="text-2xl font-black tracking-tighter">
-                            Lumina<span className="text-brand-primary">Blog</span>
+                            Code<span className="text-brand-primary">Stories</span>
                         </span>
                     </Link>
 
@@ -70,10 +73,27 @@ const Navbar = () => {
                     <div className="hidden md:flex items-center space-x-6">
                         {user ? (
                             <div className="flex items-center space-x-4">
-                                <Link to="/profile" className="text-right hover:text-brand-primary transition-colors">
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{user.isAdmin ? 'Admin' : 'Writer'}</p>
-                                    <p className="text-sm font-bold">{user.name}</p>
-                                </Link>
+                                <button 
+                                    onClick={() => dispatch(toggleEditModal(true))}
+                                    className="flex items-center space-x-3 hover:text-brand-primary transition-colors group text-right"
+                                >
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{user.isAdmin ? 'Admin' : 'Writer'}</p>
+                                        <p className="text-sm font-black tracking-tight">{user.name}</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden group-hover:border-brand-primary/30 transition-all shadow-lg">
+                                        {user?.profilePic ? (
+                                            <img 
+                                                src={getSafeImageUrl(user.profilePic)} 
+                                                alt={user.name} 
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                            />
+                                        ) : (
+                                            <UserCircle className="text-gray-400 group-hover:text-brand-primary transition-colors" size={24} />
+                                        )}
+                                    </div>
+                                </button>
+
                                 <button
                                     onClick={() => dispatch(logout())}
                                     className="p-3 rounded-2xl bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-all"

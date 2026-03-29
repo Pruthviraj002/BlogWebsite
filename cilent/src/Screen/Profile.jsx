@@ -2,33 +2,29 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Mail, Bookmark, Edit2, X, Camera, Save, Loader2, User, Edit3, Trash2, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { updateUserInfo } from '../Slice/userSlice';
+import { useNavigate, useParams } from 'react-router-dom';
+import { updateUserInfo, toggleEditModal } from '../Slice/userSlice';
 import { getSafeImageUrl } from '../config';
 import BlogCard from '../Components/BlogCard';
 import api from '../utils/api';
 
 const Profile = () => {
+    const { id } = useParams();
     const { data: currentUser, token } = useSelector(state => state.user);
+    const isMyProfile = !id || id === currentUser?._id;
+    
     const dispatch = useDispatch();
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState('published');
     const [userBlogs, setUserBlogs] = useState([]);
     const navigate = useNavigate();
 
     const fetchProfile = async () => {
         try {
-            const res = await api.get(`/user/me`);
+            const endpoint = isMyProfile ? `/user/me` : `/user/${id}`;
+            const res = await api.get(endpoint);
             setProfileData(res.data.data);
-            setFormData({
-                name: res.data.data.name,
-                email: res.data.data.email,
-                bio: res.data.data.bio || '',
-                profilePic: res.data.data.profilePic || '',
-                socialLinks: res.data.data.socialLinks || { twitter: '', linkedin: '', github: '' }
-            });
         } catch (error) {
             console.error(error);
         } finally {
@@ -36,22 +32,11 @@ const Profile = () => {
         }
     };
 
-    // Edit Form State
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        bio: '',
-        profilePic: '',
-        socialLinks: {
-            twitter: '',
-            linkedin: '',
-            github: ''
-        }
-    });
-
     const fetchUserBlogs = async () => {
         try {
-            const res = await api.get(`/blog?authorId=${currentUser._id}`);
+            const authorId = isMyProfile ? currentUser?._id : id;
+            if (!authorId) return;
+            const res = await api.get(`/blog?authorId=${authorId}`);
             setUserBlogs(res.data.data);
         } catch (error) {
             console.error(error);
@@ -59,11 +44,10 @@ const Profile = () => {
     };
 
     useEffect(() => {
-        if (token) {
-            fetchProfile();
-            fetchUserBlogs();
-        }
-    }, [token]);
+        if (isMyProfile && !token) return;
+        fetchProfile();
+        fetchUserBlogs();
+    }, [id, token]);
 
     const handleDeleteBlog = async (id) => {
         if (!window.confirm("Are you sure you want to delete this story? This narrative will be lost forever.")) return;
@@ -77,22 +61,18 @@ const Profile = () => {
         }
     };
 
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await api.put(`/user/${currentUser._id}`, formData);
-            dispatch(updateUserInfo(res.data.data)); // Update Redux
-            setProfileData(prev => ({ ...prev, ...res.data.data })); // Update Local State
-            setIsEditing(false);
-            alert("Profile updated successfully!");
-        } catch (error) {
-            console.error(error);
-            alert("Failed to update profile");
-        }
-    };
-
-    if (!token) return <div className="pt-40 text-center text-gray-400">Please login to view profile.</div>;
+    if (isMyProfile && !token) return <div className="pt-40 text-center text-gray-400">Please login to view profile.</div>;
     if (loading) return <div className="pt-40 flex justify-center"><Loader2 className="animate-spin text-brand-primary" size={40} /></div>;
+
+    if (!profileData) {
+        return (
+            <div className="pt-40 text-center space-y-4">
+                <User size={64} className="mx-auto text-gray-700" />
+                <h2 className="text-2xl font-bold text-gray-300">User not found</h2>
+                <button onClick={() => navigate('/blog')} className="text-brand-primary hover:underline">Back to Feed</button>
+            </div>
+        );
+    }
 
     return (
         <div className="pt-32 pb-20 px-4 max-w-7xl mx-auto">
@@ -110,15 +90,40 @@ const Profile = () => {
                                 <User size={64} className="text-gray-400" />
                             )}
                         </div>
+                        {/* Status Dot */}
+                        <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-full border-4 border-[#0a0a0a] ${
+                            profileData?.isOnline && (new Date() - new Date(profileData?.lastSeen) < 300000) 
+                            ? 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]' 
+                            : 'bg-zinc-600'
+                        }`} title={profileData?.isOnline ? "Online" : "Offline"} />
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 text-center md:text-left space-y-4">
                         <div>
-                            <h1 className="text-4xl font-bold mb-2">{profileData?.name}</h1>
-                            <div className="flex items-center justify-center md:justify-start text-gray-400 gap-2">
-                                <Mail size={16} />
-                                <span>{profileData?.email}</span>
+                            <h1 
+                                onClick={() => isMyProfile && dispatch(toggleEditModal(true))} 
+                                className={`text-4xl font-bold mb-2 ${isMyProfile ? 'cursor-pointer hover:text-brand-primary transition-colors' : ''}`}
+                            >
+                                {profileData?.name}
+                            </h1>
+                            <div className="flex items-center justify-center md:justify-start text-gray-400 gap-4">
+                                <div className="flex items-center gap-2">
+                                    <Mail size={16} />
+                                    <span>{profileData?.email}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${
+                                        profileData?.isOnline && (new Date() - new Date(profileData?.lastSeen) < 300000) 
+                                        ? 'bg-green-500 animate-pulse' 
+                                        : 'bg-zinc-500'
+                                    }`} />
+                                    <span className="text-xs font-bold uppercase tracking-wider">
+                                        {profileData?.isOnline && (new Date() - new Date(profileData?.lastSeen) < 300000) 
+                                        ? 'Active Now' 
+                                        : `Last active ${new Date(profileData?.lastSeen).toLocaleDateString()}`}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -137,13 +142,15 @@ const Profile = () => {
 
                     {/* Edit Button & Social Links */}
                     <div className="flex flex-col gap-4">
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all flex items-center gap-2 font-medium justify-center"
-                        >
-                            <Edit2 size={18} />
-                            <span>Edit Profile</span>
-                        </button>
+                        {isMyProfile && (
+                            <button
+                                onClick={() => dispatch(toggleEditModal(true))}
+                                className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all flex items-center gap-2 font-medium justify-center"
+                            >
+                                <Edit2 size={18} />
+                                <span>Edit Profile</span>
+                            </button>
+                        )}
                         
                         <div className="flex items-center gap-3 justify-center md:justify-start">
                             {profileData?.socialLinks?.twitter && (
@@ -169,8 +176,8 @@ const Profile = () => {
             {/* Content Tabs */}
             <div className="flex items-center space-x-8 mb-12 border-b border-white/5">
                 {[
-                    { id: 'published', label: 'My Stories', icon: <FileText size={18} /> },
-                    { id: 'saved', label: 'Saved Collection', icon: <Bookmark size={18} /> }
+                    { id: 'published', label: isMyProfile ? 'My Stories' : 'Stories', icon: <FileText size={18} /> },
+                    ...(isMyProfile ? [{ id: 'saved', label: 'Saved Collection', icon: <Bookmark size={18} /> }] : [])
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -242,114 +249,9 @@ const Profile = () => {
                     </div>
                 )}
             </div>
-
-            {/* Edit Modal */}
-            {isEditing && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="glass w-full max-w-lg rounded-3xl p-8 relative animate-in fade-in zoom-in duration-300">
-                        <button
-                            onClick={() => setIsEditing(false)}
-                            className="absolute top-6 right-6 p-2 text-gray-400 hover:text-white transition-colors"
-                        >
-                            <X size={24} />
-                        </button>
-
-                        <h2 className="text-2xl font-bold mb-8">Edit Profile</h2>
-
-                        <form onSubmit={handleUpdate} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Full Name</label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Email Address</label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-400">Bio</label>
-                                <textarea
-                                    value={formData.bio}
-                                    onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                                    rows={3}
-                                    className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20 resize-none"
-                                    placeholder="Tell us about yourself..."
-                                />
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">Profile Image URL</label>
-                                    <div className="relative">
-                                        <Camera className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-                                        <input
-                                            type="text"
-                                            value={formData.profilePic}
-                                            onChange={e => setFormData({ ...formData, profilePic: e.target.value })}
-                                            className="w-full glass pl-12 pr-4 py-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">Twitter URL</label>
-                                    <input
-                                        type="text"
-                                        value={formData.socialLinks.twitter}
-                                        onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, twitter: e.target.value } })}
-                                        className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20"
-                                        placeholder="https://x.com/username"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">LinkedIn URL</label>
-                                    <input
-                                        type="text"
-                                        value={formData.socialLinks.linkedin}
-                                        onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, linkedin: e.target.value } })}
-                                        className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20"
-                                        placeholder="https://linkedin.com/in/username"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-400">GitHub URL</label>
-                                    <input
-                                        type="text"
-                                        value={formData.socialLinks.github}
-                                        onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, github: e.target.value } })}
-                                        className="w-full glass p-4 rounded-xl outline-none focus:ring-2 ring-brand-primary/20"
-                                        placeholder="https://github.com/username"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-4 bg-brand-primary rounded-xl text-white font-bold shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Save size={20} />
-                                <span>Save Changes</span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
+
 
 export default Profile;

@@ -133,7 +133,7 @@ const Categories = () => {
                     <div className="mt-20 glass p-12 rounded-[3rem] border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="text-left space-y-4">
                             <h3 className="text-3xl font-black tracking-tight">Ready to Share Your <span className="gradient-text">Perspective?</span></h3>
-                            <p className="text-zinc-400 font-medium">Lumina collectors and writers enjoy full ownership of their narratives.</p>
+                            <p className="text-zinc-400 font-medium">CodeStories collectors and writers enjoy full ownership of their narratives.</p>
                         </div>
                         <div className="flex items-center gap-4">
                             <Link to="/login" className="text-zinc-400 font-bold hover:text-white transition-colors">Login to Create</Link>

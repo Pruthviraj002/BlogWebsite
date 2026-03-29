@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, Loader2, Sparkles } from 'lucide-react';
-import { loginStart, loginSuccess, loginFailure } from '../Slice/userSlice';
+import toast from 'react-hot-toast';
 import api from '../utils/api';
+import { loginStart, loginSuccess, loginFailure } from '../Slice/userSlice';
 
 const Register = () => {
     const [name, setName] = useState('');
@@ -15,15 +16,36 @@ const Register = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        if (!name || !email || !password) {
+            return toast.error("Please fill all fields");
+        }
+
+        if (name.length < 2) {
+            return toast.error("Name must be at least 2 characters");
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return toast.error("Please enter a valid email address");
+        }
+
+        if (password.length < 6) {
+            return toast.error("Password must be at least 6 characters");
+        }
+
         dispatch(loginStart());
         try {
             await api.post(`/user`, { name, email, password });
             // Automatic login after registration
             const loginRes = await api.post(`/user/login`, { email, password });
-            dispatch(loginSuccess(loginRes.data.data)); // Now includes refreshToken
+            dispatch(loginSuccess(loginRes.data.data)); 
+            toast.success(`Welcome to CodeStories, ${name}!`);
             navigate('/');
         } catch (err) {
-            dispatch(loginFailure(err.response?.data?.message || "Registration failed"));
+            const errMsg = err.response?.data?.message || "Registration failed";
+            dispatch(loginFailure(errMsg));
+            toast.error(errMsg);
         }
     };
 
@@ -34,7 +56,7 @@ const Register = () => {
 
                 <div className="text-center mb-10">
                     <h1 className="text-4xl font-black mb-3 tracking-tight">Join <span className="gradient-text">Community</span></h1>
-                    <p className="text-gray-500 font-medium">Start your blogging journey today.</p>
+                    <p className="text-gray-500 font-medium">Start your CodeStories journey today.</p>
                 </div>
 
                 {error && (
@@ -68,7 +90,7 @@ const Register = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@lumina.com"
+                                placeholder="name@codestories.com"
                                 className="w-full glass pl-12 pr-6 py-4 rounded-2xl outline-none focus:ring-2 ring-brand-primary/20 transition-all font-medium"
                             />
                         </div>

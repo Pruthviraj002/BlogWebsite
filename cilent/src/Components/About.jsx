@@ -74,7 +74,7 @@ const About = () => {
 
                     <div className="space-y-6 text-gray-400 font-medium text-lg leading-relaxed">
                         <p>
-                            LuminaBlog was born from a simple realization: the internet needed a sanctuary for purity in expression. We believe that great ideas deserve a stage that is as elegant as the thoughts themselves.
+                            CodeStories was born from a simple realization: the internet needed a sanctuary for purity in expression. We believe that great ideas deserve a stage that is as elegant as the thoughts themselves.
                         </p>
                         <p>
                             Our platform is more than just a MERN stack application; it&apos;s a testament to the power of minimalist design and high-performance engineering. Every line of code and every pixel is optimized to ensure your voice is heard clearly.
