@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || 'http://localhost:5002/api/admin',
+    // Points to the main backend's /api/admin routes on Render
+    baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || 'https://blogbackend3-2ygf.onrender.com/api/admin',
 });
 
 

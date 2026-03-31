@@ -4,6 +4,11 @@ const Settings = require("../Model/settings");
 
 const maintenanceMiddleware = async (req, res, next) => {
     try {
+        // Always allow admin login through, even in maintenance mode
+        if (req.path === '/api/admin/login' || req.originalUrl.includes('/api/admin/login')) {
+            return next();
+        }
+
         const settings = await Settings.findOne();
         
         // If maintenance mode is OFF, just proceed
