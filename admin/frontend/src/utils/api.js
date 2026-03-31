@@ -1,15 +1,7 @@
 import axios from 'axios';
 
-// The correct production backend URL - hardcoded to prevent wrong env vars from overriding
-const PRODUCTION_URL = 'https://blogbackend3-2ygf.onrender.com/api/admin';
-const LOCAL_URL = 'http://localhost:5001/api/admin';
-
-// Use local URL in development, production URL in production
-// This ignores VITE_ADMIN_API_BASE_URL to fix deployment issues
-const BASE_URL = import.meta.env.DEV ? LOCAL_URL : PRODUCTION_URL;
-
 const api = axios.create({
-    baseURL: BASE_URL,
+    baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || 'https://mern-blog-admin-api.onrender.com/api/admin',
 });
 
 // Request Interceptor: Inject Token
@@ -29,10 +21,12 @@ api.interceptors.response.use((response) => {
 }, (error) => {
     if (error.response && [400, 401].includes(error.response.status)) {
         localStorage.removeItem('auth-token');
+        // Avoid infinite reload loop if already on login page
         if (!window.location.pathname.includes('login')) {
-            window.location.href = '/';
+            window.location.href = '/'; // App.jsx will handle if token is null
         }
     }
+
     return Promise.reject(error);
 });
 
